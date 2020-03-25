@@ -1,0 +1,61 @@
+esphome:
+  name: dimmer_01
+  platform: ESP8266
+  board: esp8285
+  includes:
+    - kingart_uart.h
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+substitutions:
+  hostname: "dimmer_01"
+  friendly_name: "Dimmer"
+
+globals:
+  id: set_by_touch
+  type: bool
+
+# Enable Home Assistant API
+api:
+   password: !secret api_password
+
+ota:
+   password: !secret ota_password
+
+logger:
+  baud_rate: 0
+  level: none
+
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 19200
+  id: uart0
+
+status_led:
+  pin: 
+     number: GPIO13
+     inverted: True
+
+
+light:
+  - platform: monochromatic
+    name: ${friendly_name}
+    id: ${hostname}
+    output: dimmer
+    gamma_correct: 1.0
+    default_transition_length: 0s
+
+output:
+  - platform: custom
+    type: float
+    lambda: |-
+      auto float_out = new KingArtsComponent(id(uart0), id(${hostname}));
+      App.register_component(float_out);
+      return {float_out};
+    outputs:
+      - id: dimmer
+        
+      
